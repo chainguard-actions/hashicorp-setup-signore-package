@@ -1,0 +1,45 @@
+name: Test basic signore installation
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          version: v0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Assert version output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.version }}
+        run: |
+          echo "actual version: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected version output to be non-empty"
+            exit 1
+          fi
+          echo "PASS: version output is '$ACTUAL'"
+      - name: Assert signore binary is on PATH
+        run: |
+          if ! command -v signore &>/dev/null; then
+            echo "FAIL: signore binary not found on PATH"
+            exit 1
+          fi
+          echo "PASS: signore found at $(command -v signore)"
+      - name: Assert signore config exists
+        run: |
+          if [ ! -f "$HOME/.signore/config.yaml" ]; then
+            echo "FAIL: signore config file not found at ~/.signore/config.yaml"
+            exit 1
+          fi
+          echo "PASS: signore config file exists"
+      - name: Assert signer not set in config (no signer input)
+        run: |
+          if grep -q "^signer:" "$HOME/.signore/config.yaml"; then
+            echo "FAIL: signer should not be set in config when no signer input provided"
+            exit 1
+          fi
+          echo "PASS: signer not set in config as expected"

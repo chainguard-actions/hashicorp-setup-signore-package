@@ -1,0 +1,49 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
+name: install signore
+description: installs the signore client from a GitHub Packages docker image
+inputs:
+  signer:
+    description: the signer to add to the signore config (optional)
+  token:
+    description: |
+      GITHUB_TOKEN with access to the signore package
+      Not required if the calling repository is in the `hashicorp` GitHub organization
+    default: ${{ github.token }}
+  version:
+    description: signore cli version to install (semver supported)
+    required: true
+    default: v0
+outputs:
+  version:
+    description: the version of the signore CLI that was installed
+    value: ${{ steps.get-version.outputs.installed-version }}
+runs:
+  using: composite
+  steps:
+    - name: login to ghcr, copy from image
+      shell: bash
+      env:
+        INPUT_TOKEN: ${{ inputs.token }}
+        GITHUB_ACTOR: ${{ github.actor }}
+        INPUT_VERSION: ${{ inputs.version }}
+      run: |
+        echo "$INPUT_TOKEN" | docker login -u "$GITHUB_ACTOR" --password-stdin ghcr.io
+        docker pull "ghcr.io/hashicorp/signore:$INPUT_VERSION"
+        CONTAINER_ID=$(docker create "ghcr.io/hashicorp/signore:$INPUT_VERSION")
+        mkdir -p "$HOME/bin"
+        docker cp "$CONTAINER_ID:/usr/bin/signore" "$HOME/bin/signore"
+        docker rm -f "$CONTAINER_ID"
+        echo "$HOME/bin" >> $GITHUB_PATH
+    - name: template signore config
+      shell: bash
+      env:
+        INPUT_SIGNER: ${{ inputs.signer }}
+      run: |
+        mkdir -p ~/.signore || true
+        touch ~/.signore/config.yaml || true
+        [ -n "$INPUT_SIGNER" ] && echo "signer: $INPUT_SIGNER" >> ~/.signore/config.yaml || true
+    - id: get-version
+      shell: bash
+      run: echo "installed-version=$(signore version)" >> $GITHUB_OUTPUT
