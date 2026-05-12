@@ -1,0 +1,7 @@
+{
+  "owner": "hashicorp",
+  "name": "setup-signore-package",
+  "visibility": "internal",
+  "description": "installs the signore client from a GitHub Packages docker image",
+  "block_publish": false
+}
