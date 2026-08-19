@@ -8,7 +8,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
-| v1.1 | [`v1.1`](https://github.com/chainguard-actions/hashicorp-setup-signore-package/tree/v1.1) | — |
+| v1.1 | [`v1.1`](https://github.com/chainguard-actions/hashicorp-setup-signore-package/tree/v1.1) | [`642f2fe`](https://github.com/hashicorp/setup-signore-package/commit/642f2fe1af5a6a886dabef08d59980d70844dfab) |
 
 ## Privacy
 
